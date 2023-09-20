@@ -1,0 +1,6 @@
+// FunctionLiteral : func [ '(' IDENT { ',' IDENT } ')' ] FunBody
+// FunBody : is Body end | => Expression
+
+var myFunc := func (x, y) is
+    print x, y
+end

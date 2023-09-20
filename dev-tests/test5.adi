@@ -1,0 +1,19 @@
+
+var a := true
+var b := false
+ 
+if (a = true and b = false)
+then 
+    print if1
+end
+
+if ((a = not false or b = false) and (a = true or b = not true))
+then 
+    print if2
+end
+
+var c := a or b // true
+
+c := a xor b
+
+

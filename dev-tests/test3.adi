@@ -1,0 +1,9 @@
+// 'while' loop
+
+// while Expression loop Body end
+
+var a := 1
+
+while a <= 10 loop
+    a := a + 1
+end

@@ -1,0 +1,7 @@
+// Operations on numbers
+
+var x := 4 // integer
+var y := 5.5 // real
+
+var z := x + y // integer + real => real
+

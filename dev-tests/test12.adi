@@ -1,0 +1,10 @@
+// Tuple : '{' TupleElement { ',' TupleElement } '}'
+// TupleElement : [ Identifier ':=' ] Expression
+
+var t := {a:=1, b:=2, c};
+t := t + {d:=3}; // now t is {a=1, b=2, c, d=3}
+
+var x := t.b; // x = 2
+
+var y := t.1; // now y is 1
+var z := t.3; // now z has the value of c

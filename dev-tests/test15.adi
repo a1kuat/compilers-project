@@ -1,0 +1,23 @@
+// Find the largest word in a given string.
+
+var input := 'Innopolis is the best university ever'
+var inputSize := 31
+var largestWord, str := "" , ""
+var cnt,max := 0,0
+
+for ch in 0 .. inputSize - 1 
+loop
+    if input[ch] = ' ' then
+        if cnt > mx then
+            mx = cnt
+            largestWord = str
+        end
+        cnt := 0
+        str := '' 
+    else
+        cnt := cnt + 1
+        str := str + input[ch]
+    end
+end
+
+print largestWord 

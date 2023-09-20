@@ -1,0 +1,3 @@
+var num := readInt
+var str := readString
+var float := readReal

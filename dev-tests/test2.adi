@@ -1,0 +1,12 @@
+// 'if' expression, check if the statement == True
+
+// if Expression then Body [ else Body ] end
+
+var a := 1
+
+if a = 1 then
+    a := 2
+else
+    a := 1
+end
+

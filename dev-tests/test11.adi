@@ -1,0 +1,11 @@
+//Array : '[' [ Expression { ',' Expression } ] ']'
+
+var t := []; // empty array declaration
+
+t[10] := 25;
+
+t[100] := func(x) => x+1;
+
+t[1000] := {a := 1, b := 2.7};
+
+var a := [1 , 2 , 3];

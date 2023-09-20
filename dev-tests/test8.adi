@@ -1,0 +1,17 @@
+// Unary : Reference | Reference is TypeIndicator | [ '+' | '-' | not ] Primary
+var num is int 
+var r is real // double in C++
+var ok is bool
+var str is string 
+var t is {int, string, real}; // tuple type
+var add is func(int, real) // functional type
+
+// Type and Literals
+// Literal :
+var a := 5 // INTEGER
+var b := 5.5 // REAL
+var c := "a" // STRING
+var ok := true // Boolean
+var t := { a := 5, b := "sss", 12.34 } // | Tuple 
+var arr := [ 1, 2, 3 ] // Array 
+var em // empty
