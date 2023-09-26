@@ -189,79 +189,78 @@ public:
         return false;
     }
 
-    #include <string>
 
-std::string getTokenTypeName(TokenType tokenType) {
-    std::string typeName;
+    std::string getTokenTypeName(TokenType tokenType) {
+        std::string typeName;
 
-    switch(tokenType) {
-        case TokenType::NUMBER:
-            typeName = "NUMBER";
-            break;
-        case TokenType::IDENTIFIER:
-            typeName = "IDENTIFIER";
-            break;
-        case TokenType::COMMA:
-            typeName = "COMMA";
-            break;
-        case TokenType::KEYWORD:
-            typeName = "KEYWORD";
-            break;
-        case TokenType::DELIMITER:
-            typeName = "DELIMITER";
-            break;
-        case TokenType::LEFTBRACKET:
-            typeName = "LEFTBRACKET";
-            break;
-        case TokenType::RIGHTBRACKET:
-            typeName = "RIGHTBRACKET";
-            break;
-        case TokenType::PLUS:
-            typeName = "PLUS";
-            break;
-        case TokenType::MINUS:
-            typeName = "MINUS";
-            break;
-        case TokenType::MULTIPLY:
-            typeName = "MULTIPLY";
-            break;
-        case TokenType::DIVIDE:
-            typeName = "DIVIDE";
-            break;
-        case TokenType::END_OF_FILE:
-            typeName = "END_OF_FILE";
-            break;
-        case TokenType::COMMENT:
-            typeName = "COMMENT";
-            break;
-        case TokenType::DEFINITION:
-            typeName = "DEFINITION";
-            break;
-        case TokenType::OPENBRACKET:
-            typeName = "OPENBRACKET";
-            break;
-        case TokenType::CLOSEBRACKET:
-            typeName = "CLOSEBRACKET";
-            break;
-        case TokenType::OPENSQUAREBRACKET:
-            typeName = "OPENSQUAREBRACKET";
-            break;
-        case TokenType::CLOSESQUAREBRACKET:
-            typeName = "CLOSESQUAREBRACKET";
-            break;
-        case TokenType::OPENFIGUREBRACKET:
-            typeName = "OPENFIGUREBRACKET";
-            break;
-        case TokenType::CLOSEFIGUREBRACKET:
-            typeName = "CLOSEFIGUREBRACKET";
-            break;
-        case TokenType::RANGE:
-            typeName = "RANGE";
-            break;
+        switch(tokenType) {
+            case TokenType::NUMBER:
+                typeName = "NUMBER";
+                break;
+            case TokenType::IDENTIFIER:
+                typeName = "IDENTIFIER";
+                break;
+            case TokenType::COMMA:
+                typeName = "COMMA";
+                break;
+            case TokenType::KEYWORD:
+                typeName = "KEYWORD";
+                break;
+            case TokenType::DELIMITER:
+                typeName = "DELIMITER";
+                break;
+            case TokenType::LEFTBRACKET:
+                typeName = "LEFTBRACKET";
+                break;
+            case TokenType::RIGHTBRACKET:
+                typeName = "RIGHTBRACKET";
+                break;
+            case TokenType::PLUS:
+                typeName = "PLUS";
+                break;
+            case TokenType::MINUS:
+                typeName = "MINUS";
+                break;
+            case TokenType::MULTIPLY:
+                typeName = "MULTIPLY";
+                break;
+            case TokenType::DIVIDE:
+                typeName = "DIVIDE";
+                break;
+            case TokenType::END_OF_FILE:
+                typeName = "END_OF_FILE";
+                break;
+            case TokenType::COMMENT:
+                typeName = "COMMENT";
+                break;
+            case TokenType::DEFINITION:
+                typeName = "DEFINITION";
+                break;
+            case TokenType::OPENBRACKET:
+                typeName = "OPENBRACKET";
+                break;
+            case TokenType::CLOSEBRACKET:
+                typeName = "CLOSEBRACKET";
+                break;
+            case TokenType::OPENSQUAREBRACKET:
+                typeName = "OPENSQUAREBRACKET";
+                break;
+            case TokenType::CLOSESQUAREBRACKET:
+                typeName = "CLOSESQUAREBRACKET";
+                break;
+            case TokenType::OPENFIGUREBRACKET:
+                typeName = "OPENFIGUREBRACKET";
+                break;
+            case TokenType::CLOSEFIGUREBRACKET:
+                typeName = "CLOSEFIGUREBRACKET";
+                break;
+            case TokenType::RANGE:
+                typeName = "RANGE";
+                break;
+        }
+
+        return typeName;
     }
-
-    return typeName;
-}
 
 
     void printTokens(std::vector<Token> tokens){
