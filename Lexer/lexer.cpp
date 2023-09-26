@@ -2,7 +2,7 @@
 #include <fstream>
 #include <string>
 #include <vector>
-#include <keywords.h>
+#include "keywords.h"
 
 enum class TokenType {
     NUMBER,
@@ -61,6 +61,8 @@ public:
                 token += src[i];
                 
                 tokenCollection.push_back(Token{getCharType(src[i]), token});
+
+                std::cout << "Operator: " << token << '\n';
                 
                 continue;
             }
@@ -153,9 +155,14 @@ public:
 
 
 
-int main() {
-    std::string fileName = "42 + 3 - 7 * 2 / 4";
-    Lexer lexer(fileName);
+int main(int argc, char** argv) {
+
+    if(argc != 2) {
+        std::cerr << "ERROR: ";
+        return 1;
+    }
+
+    Lexer lexer(argv[1]);
 
     std::vector<Token> tokens = lexer.analyze();
     

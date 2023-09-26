@@ -5,13 +5,13 @@
 var someVariable
 
 // Empty value
-someVariable := empty
+someVariable := empty;
 
 // 'is' operation to check the variable type
-someVariable is empty 
+someVariable is empty;
 
 // Variable definition
-someVariable := 4
+someVariable := 4;
 
 // Multiple variable declaration and definition
-var name, age := "John Doe", 25
+var name, age := "John Doe", 25;
