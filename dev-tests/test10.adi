@@ -3,7 +3,7 @@
 // | Reference '(' Expression { ',' Expression } ')'
 // | Reference '.' IDENT
 
-var arr := [10, 20, 30, 40, 50]
+var arr ::= [10, 20, 30, 40, 50]
 
 for i in 1..5 loop
     print arr[i]
@@ -16,3 +16,8 @@ print arr[2](5, 2)
 var tuple := {a := 11, b := 22, c := 33}
 
 print tuple.a
+
+>=
+==
+!=
+<=
