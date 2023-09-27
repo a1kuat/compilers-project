@@ -14,3 +14,4 @@ const std::string EMPTY_KEYWORD = "empty";
 const std::string TRUE_KEYWORD = "true";
 const std::string FALSE_KEYWORD = "false";
 const std::string IS_KEYWORD = "is";
+const std::string RANGE_KEYWOED = "range";

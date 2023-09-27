@@ -5,7 +5,7 @@
 
 var arr := [10, 20, 30, 40, 50]
 
-for i in 1...5 loop
+for i in 1..5 loop
     print arr[i]
 end
 
