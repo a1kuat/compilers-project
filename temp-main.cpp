@@ -27,8 +27,6 @@ enum class TokenType
     COMMA,
     KEYWORD,
     DELIMITER,
-    LEFTBRACKET,
-    RIGHTBRACKET,
     PLUS,
     MINUS,
     MULTIPLY,
@@ -134,6 +132,11 @@ public:
                         }
                         i = j - 1;
                         t = TokenType::COMMENT;
+                    }
+                    else
+                    {
+                        token = "/";
+                        t = TokenType::DIVIDE;
                     }
                 }
                 else if (src[i] == '=')
@@ -388,12 +391,6 @@ public:
         case TokenType::DELIMITER:
             typeName = "DELIMITER";
             break;
-        case TokenType::LEFTBRACKET:
-            typeName = "LEFTBRACKET";
-            break;
-        case TokenType::RIGHTBRACKET:
-            typeName = "RIGHTBRACKET";
-            break;
         case TokenType::PLUS:
             typeName = "PLUS";
             break;
@@ -499,40 +496,40 @@ public:
 enum class NodeType
 {
     PROGRAM,
+    EXPRESSION,
+    TERM,
+    FACTOR,
+    VARIABLE,
+    CONSTANT,
     ASSIGNMENT,
     ASSIGNMENT_LEFT,
     ASSIGNMENT_RIGHT,
-    EXPRESSION,
     IF_STATEMENT,
     IF_BODY,
     IF_COND,
-    EXPRESSION
 
-};
-
-class Node
-{
-public:
-    NodeType type;
-    std::list<Node> children;
-
-    Node()
-    {
-    }
-
-    Node(NodeType newtype)
-    {
-        type = newtype;
-    }
 };
 
 class AST
 {
 public:
+    class Node
+    {
+    public:
+        NodeType type;
+        std::list<Node> children;
+        Token value;
+
+        Node()
+        {
+        }
+    };
+
     Node node;
+
     AST()
     {
-        node = Node(NodeType::PROGRAM);
+        node.type = NodeType::PROGRAM;
     }
 };
 
@@ -540,6 +537,8 @@ class Parser : public Lexer
 {
     std::list<Token> tokens;
     AST tree;
+    std::list<Token> curTokensList;
+    Token curToken;
 
 public:
     Parser(std::list<Token> tokenCollection)
@@ -554,128 +553,263 @@ public:
         return t;
     }
 
-    Node handleAssignmentStatement()
+    bool getCurToken()
+    {
+        if (curTokensList.empty())
+            return false;
+        Token t = curTokensList.front();
+        curTokensList.pop_front();
+        curToken = t;
+        return true;
+    }
+
+    AST::Node handleAssignmentStatement()
     {
         Token token = getToken();
         std::list<Token> left;
-        while(token.type != TokenType::DEFINITION){
+        while (token.type != TokenType::DEFINITION)
+        {
             left.push_back(token);
             token = getToken();
         }
 
-        if (left.empty()){
+        if (left.empty())
+        {
             // THROW ERROR empty assignment
         }
 
         token = getToken();
         std::list<Token> right;
 
-        while (token.type != TokenType::DELIMITER){
+        while (token.type != TokenType::DELIMITER)
+        {
             right.push_back(token);
             token = getToken();
         }
 
-        if (right.empty()){
+        if (right.empty())
+        {
             // THROW ERROR empty assignment
         }
 
-        Node assignmentNode;
+        AST::Node assignmentNode;
 
-        Node leftNode;
+        AST::Node leftNode;
         leftNode.type = NodeType::ASSIGNMENT_LEFT;
         leftNode.children.push_back(getNodeFromList(left));
-        
-        Node rightNode;
+
+        AST::Node rightNode;
         rightNode.type = NodeType::ASSIGNMENT_RIGHT;
         rightNode.children.push_back(getNodeFromList(right));
 
         assignmentNode.type = NodeType::ASSIGNMENT;
         assignmentNode.children.push_back(rightNode);
         assignmentNode.children.push_back(leftNode);
+
+        return AST::Node();
     }
 
-    Node getNodeFromList(std::list <Token> tokens){
-        if (tokens.size() == 1){
+    AST::Node getNodeFromList(std::list<Token> tokens)
+    {
+        if (tokens.size() == 1)
+        {
             // const/variable
         }
 
-        else {
-            //expression
+        else
+        {
+            // expression
 
             // if
 
             // func
-            
-            // 
+
+            //
         }
+
+        return AST::Node();
     }
 
-    Node getNode()
+    AST::Node getNode()
     {
         Token tk = getToken();
 
         // Assignment Statement
 
-        if (tk.type == TokenType::KEYWORD and tk.value == VAR_KEYWORD)
+        if (tk.type == TokenType::NUMBER || tk.type == TokenType::IDENTIFIER || tk.type == TokenType::OPENBRACKET)
+        {
+            while (tk.type != TokenType::DELIMITER)
+            {
+                curTokensList.push_back(tk);
+                tk = getToken();
+            }
+
+            for (auto t : curTokensList)
+            {
+                std::cout << t.value << ' ';
+            }
+            std::cout << '\n';
+
+            getCurToken();
+            tree.node.children.push_back(parseExpr());
+
+            for (auto t : curTokensList)
+            {
+                std::cout << t.value << ' ';
+            }
+
+            std::cout << "\n";
+
+            printAST(tree.node);
+        }
+
+        if (tk.type == TokenType::KEYWORD && tk.value == VAR_KEYWORD)
         {
             return handleAssignmentStatement();
         }
 
-        else
-            throw "Error: Unknown statement type";
+        return AST::Node();
     }
 
     void analyze()
     {
         while (!tokens.empty())
         {
-            Node newNode = getNode();
-            while()
-            tree.node.children.push_back(newNode);
+            AST::Node newNode = getNode();
+        }
+    }
+    AST::Node makeTree(NodeType nodetype, Token value, std::list<AST::Node> children)
+    {
+        AST::Node newnode;
+        newnode.type = nodetype;
+        newnode.value = value;
+        swap(newnode.children, children);
+        return newnode;
+    }
+    AST::Node parseExpr()
+    {
+        AST::Node left = parseTerm();
+        while (curToken.type == TokenType::PLUS || curToken.type == TokenType::MINUS)
+        {
+            Token tk = curToken;
+            getCurToken();
+            left = makeTree(NodeType::EXPRESSION, tk, {left, parseTerm()});
         }
 
-        // fillstmts();
-        // for (auto e : stmts) {
-        //     for (auto t : e.getTokens()) {
-        //         std::cout << t.value << ' ';
-        //     }
-        //     std::cout << '\n';
-        // }
-    }
-
-    AST::Node parseId() {
-        
-    }
-
-    AST::Node parseExpr() {
-        AST::Node left = parseTerm();
-        Token tk;
-        while (tk = getToken(), tk.type == TokenType::PLUS || tk.type == TokenType::MINUS)
-            left = mkBinTree(tk, left, parseTerm());
         return left;
     }
 
     AST::Node parseTerm()
     {
         AST::Node left = parseFactor();
-        Token tk;
-        while (tk = getToken(), tk.type == TokenType::MULTIPLY || tk.type == TokenType::DIVIDE)
-            left = mkBinTree(tk, left, parseFactor());
+        while (curToken.type == TokenType::MULTIPLY || curToken.type == TokenType::DIVIDE)
+        {
+            Token tk = curToken;
+            getCurToken();
+            left = makeTree(NodeType::TERM, tk, {left, parseFactor()});
+        }
+
         return left;
     }
 
     AST::Node parseFactor()
     {
         AST::Node res;
-        Token tk;
-        if (tk = getToken(), tk.type == TokenType::LEFTBRACKET)
+        Token tk = curToken;
+        if (tk.type == TokenType::OPENBRACKET)
         {
+            getCurToken(); // skip '('
             res = parseExpr();
-            getToken(); // skip ')'
+            getCurToken(); // skip ')'
         }
         else
-            res = mkUnaryTree(parseId());  //  !!! WARNING
+        {
+            getCurToken();
+            res = makeTree(NodeType::FACTOR, tk, {});
+        }
         return res;
+    }
+
+    std::string getNodeTypeName(NodeType nodetype)
+    {
+        std::string typeName;
+
+        switch (nodetype)
+        {
+        case NodeType::PROGRAM:
+            typeName = "PROGRAM";
+            break;
+
+        case NodeType::ASSIGNMENT:
+            typeName = "ASSIGNMENT";
+            break;
+
+        case NodeType::FACTOR:
+            typeName = "FACTOR";
+            break;
+
+        case NodeType::CONSTANT:
+            typeName = "CONSTANT";
+            break;
+
+        case NodeType::TERM:
+            typeName = "TERM";
+            break;
+
+        case NodeType::VARIABLE:
+            typeName = "VARIABLE";
+            break;
+
+        case NodeType::ASSIGNMENT_LEFT:
+            typeName = "ASSIGNMENT_LEFT";
+            break;
+
+        case NodeType::ASSIGNMENT_RIGHT:
+            typeName = "ASSIGNMENT_RIGHT";
+            break;
+
+        case NodeType::IF_BODY:
+            typeName = "IF_BODY";
+            break;
+
+        case NodeType::IF_COND:
+            typeName = "IF_COND";
+            break;
+
+        case NodeType::IF_STATEMENT:
+            typeName = "IF_STATEMENT";
+            break;
+
+        case NodeType::EXPRESSION:
+            typeName = "EXPRESSION";
+            break;
+        }
+
+        return typeName;
+    }
+
+    void printAST(AST::Node node, std::string tab = "")
+    {
+        std::string TAB = "   ";
+        std::cout << tab << "{\n";
+        std::string t = tab;
+        tab += TAB;
+        std::cout << tab << "\"Token\": {\"type\": \"" << Lexer::getTokenTypeName(node.value.type) << "\", \"value\": \"" << node.value.value << "\"}," << '\n';
+        std::cout << tab << "\"Type\": \"" << getNodeTypeName(node.type) << "\",\n";
+        if (node.children.empty())
+        {
+            std::cout << tab << "\"children\": []\n";
+        }
+        else
+        {
+            std::cout << tab << "\"children\": [\n";
+            for (auto n : node.children)
+            {
+                printAST(n, tab + TAB);
+            }
+            std::cout << tab << "]\n";
+        }
+        std::cout << t << "},\n";
     }
 };
 
@@ -692,7 +826,7 @@ int main(int argc, char **argv)
 
     std::list<Token> tokens = lexer.analyze();
 
-    lexer.printTokens(tokens);
+    // lexer.printTokens(tokens);
 
     Parser parser(tokens);
     parser.analyze();
