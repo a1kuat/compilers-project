@@ -51,6 +51,10 @@
         "ctime": "cpp",
         "map": "cpp",
         "regex": "cpp",
-        "sstream": "cpp"
+        "sstream": "cpp",
+        "list": "cpp"
+    },
+    "files.watcherExclude": {
+        "**/target": true
     }
 }
