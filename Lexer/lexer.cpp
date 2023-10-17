@@ -3,6 +3,7 @@
 #include <string>
 #include <vector>
 #include "keywords.h"
+#include <regex>
 
 enum class TokenType {
     NUMBER,
@@ -25,7 +26,19 @@ enum class TokenType {
     CLOSESQUAREBRACKET,
     OPENFIGUREBRACKET,
     CLOSEFIGUREBRACKET,
-    RANGE
+    RANGE,
+    DOT,
+    UNKNOWNTYPE,
+    COLON,
+    EQUAL,
+    EQUALITY,
+    UNEQUALITY,
+    LESSOREQUAL,
+    MOREOREQUAL,
+    LESS,
+    MORE,
+    EXCLAMATION,
+    FOLLOWING
 };
 
 class Token {
@@ -36,7 +49,6 @@ public:
 
 
 class Lexer {
-    int currentPosition;
     std::string src;
     std::vector<Token> tokenCollection;
 public:
@@ -56,8 +68,7 @@ public:
     }
 
     std::vector<Token> analyze() {
-        std::string operators = "+-*/,:=(){}[]";
-        std::string delimiters = ";";
+        std::string operators = "+-*/,:=(){}[];.><!";
         
         for(int i = 0; i < src.length(); i++) {
             std::string token = "";
@@ -65,16 +76,19 @@ public:
             if (src[i] == ' ' || src[i] == '\n' || src[i] == '\t')
                 continue;
             
-            if (operators.find(src[i]) != std::string::npos) {
+            else if (operators.find(src[i]) != std::string::npos) {
                 TokenType t;
                 if(src[i] == ':') {
                     if(i + 1 < src.size() && src[i+1] == '='){
                         token += src[i];
                         token += src[i+1];
                         i++;
+                        t = TokenType::DEFINITION;
                     }
-                    t = TokenType::DEFINITION;
-                    
+                    else {
+                        token += src[i];
+                        t = TokenType::COLON;
+                    }
                 } else if(src[i] == '/') {
                     if(i + 1 < src.size() && src[i+1] == '/'){
                         int j = i;
@@ -85,7 +99,60 @@ public:
                         i = j - 1;
                         t = TokenType::COMMENT;
                     }
-                } else {
+
+                } else if(src[i] == '='){
+                    if(i + 1 < src.size() && src[i+1] == '='){
+                        token += src[i];
+                        token += src[i+1];
+                        i++;
+                        t = TokenType::EQUALITY;
+                    }
+                    else if(i + 1 < src.size() && src[i+1] == '>'){
+                        token += src[i];
+                        token += src[i+1];
+                        i++;
+                        t = TokenType::FOLLOWING;
+                    }
+                    else {
+                        token += src[i];
+                        t = TokenType::EQUAL;
+                    }
+                } else if(src[i] == '!'){
+                    if(i + 1 < src.size() && src[i+1] == '='){
+                        token += src[i];
+                        token += src[i+1];
+                        i++;
+                        t = TokenType::UNEQUALITY;
+                    }
+                    else {
+                        token += src[i];
+                        t = TokenType::EXCLAMATION;
+                    }
+                } else if(src[i] == '>'){
+                    if(i + 1 < src.size() && src[i+1] == '='){
+                        token += src[i];
+                        token += src[i+1];
+                        i++;
+                        t = TokenType::MOREOREQUAL;
+                    }
+                    else {
+                        token += src[i];
+                        t = TokenType::MORE;
+                    }
+                } else if(src[i] == '<'){
+                    if(i + 1 < src.size() && src[i+1] == '='){
+                        token += src[i];
+                        token += src[i+1];
+                        i++;
+                        t = TokenType::LESSOREQUAL;
+                    }
+                    else {
+                        token += src[i];
+                        t = TokenType::LESS;
+                    }
+                }
+                
+                 else {
                     token += src[i];
                     t = getTokenType(src[i]);
                 }
@@ -94,32 +161,27 @@ public:
                 continue;
             }
 
-            if (delimiters.find(src[i]) != std::string::npos) {
-                token += src[i];
-
-                tokenCollection.push_back(Token{getTokenType(src[i]), token});
-                continue;
-            }
-
-            if (isDigit(src[i])) {
+            else if (isDigit(src[i])) {
                 TokenType ttype = TokenType::NUMBER;
                 while(i < src.length() && (isDigit(src[i]) || src[i] == '.')) {
                     token += src[i];
                     i++;
-                    
-                    if(src[i] == '.' && src[i+1] == '.'){
-                        ttype = TokenType::RANGE;
-                    }
+                }
 
+                if (isRange(token)){
+                    ttype = TokenType::RANGE;
+                }
+
+                if (hasMoreThanOneDot(token)){
+                    ttype = TokenType::UNKNOWNTYPE;
                 }
                     
-
                 i--;
                 tokenCollection.push_back(Token{ttype, token});
                 continue;
             }
 
-            if (isIdentifierOk(src[i])) {
+            else if (isIdentifierOk(src[i])) {
                 while(i < src.length() && (isIdentifierOk(src[i]) || isDigit(src[i]))) {
                     token += src[i];
                     i++;
@@ -130,8 +192,31 @@ public:
                 i--;
                 continue;
             }
+
+            else{
+                token += src[i];
+                tokenCollection.push_back(Token{TokenType::UNKNOWNTYPE, token});
+            }
         }
         return tokenCollection;
+    }
+
+    bool isRange(const std::string& str) {
+        std::regex rangeRegex("^\\d+\\.\\.\\d+$");
+        return std::regex_match(str, rangeRegex);
+    }
+
+    bool hasMoreThanOneDot(const std::string& str){
+        int count = 0;
+        for (char ch : str){
+            if (ch == '.'){
+                count ++;
+                if (count > 1){
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
 
@@ -149,6 +234,8 @@ public:
             case '}': return TokenType::CLOSEFIGUREBRACKET;
             case '[': return TokenType::OPENSQUAREBRACKET;
             case ']': return TokenType::CLOSESQUAREBRACKET;
+            case ':': return TokenType::COLON;
+            case '=': return TokenType::EQUAL;
             default:
                 return TokenType::IDENTIFIER;
         }
@@ -257,6 +344,39 @@ public:
             case TokenType::RANGE:
                 typeName = "RANGE";
                 break;
+            case TokenType::UNKNOWNTYPE:
+                typeName = "UNKNOWNTYPE";
+                break;
+            case TokenType::DOT:
+                typeName = "DOT";
+                break;
+            case TokenType::COLON:
+                typeName = "COLON";
+                break;
+            case TokenType::EQUAL:
+                typeName = "EQUAL";
+                break;
+            case TokenType::EQUALITY:
+                typeName = "EQUALITY";
+                break;
+            case TokenType::UNEQUALITY:
+                typeName = "UNEQUALITY";
+                break;
+            case TokenType::MORE:
+                typeName = "MORE";
+                break;
+            case TokenType::LESS:
+                typeName = "LESS";
+                break;
+            case TokenType::MOREOREQUAL:
+                typeName = "MOREOREQUAL";
+                break;
+            case TokenType::LESSOREQUAL:
+                typeName = "LESSOREQUAL";
+                break;
+            case TokenType::FOLLOWING:
+                typeName = "FOLLOWING";
+                break;
         }
 
         return typeName;
@@ -287,4 +407,3 @@ int main(int argc, char** argv) {
 
     return 0;
 }
-
