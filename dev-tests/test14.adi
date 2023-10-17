@@ -4,27 +4,27 @@
 // Return the size of the longest non-empty subarray containing only 1's in the resulting array. 
 // Return 0 if there is no such subarray.
 
-var input := [0, 1, 1, 1, 0, 1, 1, 0, 0, 1]
-var inputSize = 10
+var input := [0, 1, 1, 1, 0, 1, 1, 0, 0, 1];
+var inputSize = 10;
 
-var l, r := 0, 0
+var l, r := 0, 0;
 
-var cnt0 := 0
-var mxSize := 0
+var cnt0 := 0;
+var mxSize := 0;
 
-while r < inputSize  loop
+while r < inputSize loop
     if input[r] = 0 then
-        cnt0 := cnt0 + 1
+        cnt0 := cnt0 + 1;
     end
     while cnt0 > 1 loop
         if input[l] = 0 then
-            cnt0 := cnt0 - 1
+            cnt0 := cnt0 - 1;
         end
-        l := l + 1
+        l := l + 1;
     end
     if r - l > mxSize then
-        mxSize := r - l
+        mxSize := r - l;
     end
-    r := r + 1
+    r := r + 1;
 end
-print mxSize
+print mxSize;

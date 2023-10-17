@@ -2,5 +2,5 @@
 // FunBody : is Body end | => Expression
 
 var myFunc := func (x, y) is
-    print x, y
+    print x, y;
 end
