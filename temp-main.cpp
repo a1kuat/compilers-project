@@ -20,8 +20,7 @@ const std::string FALSE_KEYWORD = "false";
 const std::string IS_KEYWORD = "is";
 const std::string RANGE_KEYWOED = "range";
 
-enum class TokenType
-{
+enum class TokenType {
     NUMBER,
     IDENTIFIER,
     COMMA,
@@ -57,8 +56,7 @@ enum class TokenType
     FOLLOWING
 };
 
-class Token
-{
+class Token {
 public:
     TokenType type;
     std::string value;
@@ -68,16 +66,13 @@ public:
     ~Token() {}
 };
 
-class Lexer
-{
+class Lexer {
     std::string src;
     std::list<Token> tokenCollection;
-
 public:
     Lexer() {}
 
-    Lexer(std::string fileName)
-    {
+    Lexer(std::string fileName) {
         std::ifstream file(fileName);
         if (!file.is_open())
         {
@@ -93,8 +88,7 @@ public:
         file.close();
     }
 
-    std::list<Token> analyze()
-    {
+    std::list<Token> analyze() {
         std::string operators = "+-*/,:=(){}[];.><!";
 
         for (int i = 0; i < src.length(); i++)
@@ -483,8 +477,7 @@ public:
     }
 };
 
-class Statement
-{
+class Statement {
     std::list<Token> tokens;
 
 public:
@@ -496,185 +489,173 @@ public:
     }
 };
 
-enum class NodeType
-{
-    PROGRAM,
-    ASSIGNMENT,
-    ASSIGNMENT_LEFT,
-    ASSIGNMENT_RIGHT,
-    EXPRESSION,
-    IF_STATEMENT,
-    IF_BODY,
-    IF_COND,
-    EXPRESSION
 
-};
-
-class Node
-{
+class AST {
 public:
-    NodeType type;
-    std::list<Node> children;
+    class Node {
+    public:
+        Token token;
+        std::vector<Node> children;
 
-    Node()
-    {
+        Node() {}
+
+        // ~Node() {
+        //     while(!children.empty()) {
+        //         delete children.back();
+        //         children.pop_back();
+        //     }
+        // }
+
+        Node(Token token) : token(token){}
+    };
+
+    AST() {
+        node = Node();          // WARNING: token = PROGRAM
     }
-
-    Node(NodeType newtype)
-    {
-        type = newtype;
-    }
-};
-
-class AST
-{
-public:
+private:
     Node node;
-    AST()
-    {
-        node = Node(NodeType::PROGRAM);
-    }
 };
 
-class Parser : public Lexer
-{
+class Parser : public Lexer {
     std::list<Token> tokens;
     AST tree;
-
+    Token curToken;
 public:
-    Parser(std::list<Token> tokenCollection)
-    {
+    Parser(std::list<Token> tokenCollection) {
         tokens = tokenCollection;
     }
 
-    Token getToken()
-    {
-        Token t = tokens.front();
+    Token getToken() {
+        curToken = tokens.front();
         tokens.pop_front();
-        return t;
+        return curToken;
     }
 
-    Node handleAssignmentStatement()
-    {
-        Token token = getToken();
-        std::list<Token> left;
-        while(token.type != TokenType::DEFINITION){
-            left.push_back(token);
-            token = getToken();
-        }
+    // AST::Node handleAssignmentStatement() {
+    //     Token token = getToken();
+    //     std::list<Token> left;
+    //     while(token.type != TokenType::DEFINITION){
+    //         left.push_back(token);
+    //         token = getToken();
+    //     }
 
-        if (left.empty()){
-            // THROW ERROR empty assignment
-        }
+    //     if (left.empty()){
+    //         // THROW ERROR empty assignment
+    //     }
 
-        token = getToken();
-        std::list<Token> right;
+    //     token = getToken();
+    //     std::list<Token> right;
 
-        while (token.type != TokenType::DELIMITER){
-            right.push_back(token);
-            token = getToken();
-        }
+    //     while (token.type != TokenType::DELIMITER){
+    //         right.push_back(token);
+    //         token = getToken();
+    //     }
 
-        if (right.empty()){
-            // THROW ERROR empty assignment
-        }
+    //     if (right.empty()){
+    //         // THROW ERROR empty assignment
+    //     }
 
-        Node assignmentNode;
+    //     AST::Node assignmentNode;
 
-        Node leftNode;
-        leftNode.type = NodeType::ASSIGNMENT_LEFT;
-        leftNode.children.push_back(getNodeFromList(left));
+    //     AST::Node leftNode;
+    //     leftNode.type = NodeType::ASSIGNMENT_LEFT;
+    //     leftNode.children.push_back(getNodeFromList(left));
         
-        Node rightNode;
-        rightNode.type = NodeType::ASSIGNMENT_RIGHT;
-        rightNode.children.push_back(getNodeFromList(right));
+    //     AST::Node rightNode;
+    //     rightNode.type = NodeType::ASSIGNMENT_RIGHT;
+    //     rightNode.children.push_back(getNodeFromList(right));
 
-        assignmentNode.type = NodeType::ASSIGNMENT;
-        assignmentNode.children.push_back(rightNode);
-        assignmentNode.children.push_back(leftNode);
-    }
+    //     assignmentNode.type = NodeType::ASSIGNMENT;
+    //     assignmentNode.children.push_back(rightNode);
+    //     assignmentNode.children.push_back(leftNode);
+    // }
 
-    Node getNodeFromList(std::list <Token> tokens){
-        if (tokens.size() == 1){
-            // const/variable
-        }
+    // AST::Node getNodeFromList(std::list <Token> tokens){
+    //     if (tokens.size() == 1){
+    //         // const/variable
+    //     }
 
-        else {
-            //expression
+    //     else {
+    //         //expression
 
-            // if
+    //         // if
 
-            // func
+    //         // func
             
-            // 
-        }
+    //         // 
+    //     }
+    // }
+
+    // AST::Node getNode()
+    // {
+    //     Token tk = getToken();
+
+    //     // Assignment Statement
+
+    //     if (tk.type == TokenType::KEYWORD and tk.value == VAR_KEYWORD)
+    //     {
+    //         return handleAssignmentStatement();
+    //     }
+
+    //     else
+    //         throw "Error: Unknown statement type";
+    // }
+
+    // void analyze()
+    // {
+    //     while (!tokens.empty())
+    //     {
+    //         AST::Node newNode = getNode();
+    //         while()
+    //         tree.node.children.push_back(newNode);
+    //     }
+    // }
+
+    AST::Node makeTree(Token tk, std::vector<AST::Node> children) {
+        AST::Node r{tk};
+        swap(r.children, children); // WARNING! Not sure with swap Node <-> Node
     }
 
-    Node getNode()
-    {
-        Token tk = getToken();
+    // AST::Node parseLoopAndCond() {
+    //     AST::Node left = parseFactor();
+    //     Token tk;
+    //     while (tk = getToken(), tk.type == TokenType::PLUS || tk.type == TokenType::MINUS)
+    //         left = makeTree(tk, {left, parseTerm()});
+    //     return left;
+    // }
 
-        // Assignment Statement
-
-        if (tk.type == TokenType::KEYWORD and tk.value == VAR_KEYWORD)
-        {
-            return handleAssignmentStatement();
-        }
-
-        else
-            throw "Error: Unknown statement type";
-    }
-
-    void analyze()
-    {
-        while (!tokens.empty())
-        {
-            Node newNode = getNode();
-            while()
-            tree.node.children.push_back(newNode);
-        }
-
-        // fillstmts();
-        // for (auto e : stmts) {
-        //     for (auto t : e.getTokens()) {
-        //         std::cout << t.value << ' ';
-        //     }
-        //     std::cout << '\n';
-        // }
-    }
-
-    AST::Node parseId() {
-        
-    }
 
     AST::Node parseExpr() {
         AST::Node left = parseTerm();
-        Token tk;
-        while (tk = getToken(), tk.type == TokenType::PLUS || tk.type == TokenType::MINUS)
-            left = mkBinTree(tk, left, parseTerm());
+        while (curToken.type == TokenType::PLUS || curToken.type == TokenType::MINUS){
+            Token tk = curToken;
+            getToken();
+            left = makeTree(tk, {left, parseTerm()});
+        }
         return left;
     }
 
-    AST::Node parseTerm()
-    {
+    AST::Node parseTerm() {
         AST::Node left = parseFactor();
-        Token tk;
-        while (tk = getToken(), tk.type == TokenType::MULTIPLY || tk.type == TokenType::DIVIDE)
-            left = mkBinTree(tk, left, parseFactor());
+        while (curToken.type == TokenType::MULTIPLY || curToken.type == TokenType::DIVIDE){
+            Token tk = curToken;
+            getToken();
+            left = makeTree(tk, {left, parseFactor()});
+        }
         return left;
     }
 
-    AST::Node parseFactor()
-    {
+    AST::Node parseFactor() {
         AST::Node res;
-        Token tk;
-        if (tk = getToken(), tk.type == TokenType::LEFTBRACKET)
-        {
+        Token tk = curToken;
+        if (tk.type == TokenType::LEFTBRACKET) {
+            getToken();  // skip '('
             res = parseExpr();
             getToken(); // skip ')'
+        } else {
+            res = makeTree(tk, {});  //  !!! WARNING
         }
-        else
-            res = mkUnaryTree(parseId());  //  !!! WARNING
+
         return res;
     }
 };
