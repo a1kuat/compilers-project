@@ -20,7 +20,8 @@ const std::string EMPTY_KEYWORD = "empty";
 const std::string TRUE_KEYWORD = "true";
 const std::string FALSE_KEYWORD = "false";
 const std::string IS_KEYWORD = "is";
-const std::string RANGE_KEYWOED = "range";
+const std::string RANGE_KEYWORD = "range";
+const std::string IN_KEYWORD = "in";
 
 enum class TokenType
 {
@@ -319,9 +320,9 @@ public:
 
     TokenType getKeyWord(std::string str)
     {
-        std::string sarr[14] = {VAR_KEYWORD, IF_KEYWORD, THEN_KEYWORD, ELSE_KEYWORD, FOR_KEYWORD, END_KEYWORD,
-                                WHILE_KEYWORD, LOOP_KEYWORD, PRINT_KEYWORD, FUNC_KEYWORD, EMPTY_KEYWORD, TRUE_KEYWORD, FALSE_KEYWORD, IS_KEYWORD};
-        for (int i = 0; i < 14; i++)
+        std::string sarr[15] = {VAR_KEYWORD, IF_KEYWORD, THEN_KEYWORD, ELSE_KEYWORD, FOR_KEYWORD, END_KEYWORD,
+                                WHILE_KEYWORD, LOOP_KEYWORD, PRINT_KEYWORD, FUNC_KEYWORD, EMPTY_KEYWORD, TRUE_KEYWORD, FALSE_KEYWORD, IS_KEYWORD, IN_KEYWORD};
+        for (int i = 0; i < 15; i++)
         {
             if (sarr[i] == str)
                 return TokenType::KEYWORD;
@@ -383,12 +384,6 @@ public:
             break;
         case TokenType::DELIMITER:
             typeName = "DELIMITER";
-            break;
-        case TokenType::LEFTBRACKET:
-            typeName = "LEFTBRACKET";
-            break;
-        case TokenType::RIGHTBRACKET:
-            typeName = "RIGHTBRACKET";
             break;
         case TokenType::PLUS:
             typeName = "PLUS";
