@@ -1,4 +1,4 @@
-#include "lexer.h"
+#include "../../include/lexer/lexer.h"
 
 Token::Token() {}
 Token::Token(TokenType t, std::string v) : type(t), value(v) {}
@@ -397,6 +397,9 @@ std::string Lexer::getTokenTypeName(TokenType tokenType)
         break;
     case TokenType::FOLLOWING:
         typeName = "FOLLOWING";
+        break;
+    case TokenType::EXCLAMATION:
+        typeName = "EXCLAMATION";
         break;
     }
 

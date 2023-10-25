@@ -1,1 +1,0 @@
-gcc example.cpp -o example.exe -lstdc++

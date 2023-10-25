@@ -59,7 +59,7 @@ class Lexer
     std::list<Token> tokenCollection;
 
 public:
-    Lexer() {}
+    Lexer();
 
     Lexer(std::string fileName);
 
