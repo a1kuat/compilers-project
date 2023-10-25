@@ -22,8 +22,7 @@ const std::string IS_KEYWORD = "is";
 const std::string RANGE_KEYWOED = "range";
 const std::string IN_KEYWORD = "in";
 
-enum class TokenType
-{
+enum class TokenType {
     NUMBER,
     IDENTIFIER,
     COMMA,
@@ -57,8 +56,7 @@ enum class TokenType
     FOLLOWING
 };
 
-class Token
-{
+class Token {
 public:
     TokenType type;
     std::string value;
@@ -68,16 +66,13 @@ public:
     ~Token() {}
 };
 
-class Lexer
-{
+class Lexer {
     std::string src;
     std::list<Token> tokenCollection;
-
 public:
     Lexer() {}
 
-    Lexer(std::string fileName)
-    {
+    Lexer(std::string fileName) {
         std::ifstream file(fileName);
         if (!file.is_open())
         {
@@ -93,8 +88,7 @@ public:
         file.close();
     }
 
-    std::list<Token> analyze()
-    {
+    std::list<Token> analyze() {
         std::string operators = "+-*/,:=(){}[];.><!";
 
         for (int i = 0; i < src.length(); i++)
@@ -546,26 +540,25 @@ public:
         node.type = NodeType::PROGRAM;
         node.value = Token();
     }
+private:
+    Node node;
 };
 
-class Parser : public Lexer
-{
+class Parser : public Lexer {
     std::list<Token> tokens;
     AST tree;
     std::list<Token> curTokensList;
     Token curToken;
 
 public:
-    Parser(std::list<Token> tokenCollection)
-    {
+    Parser(std::list<Token> tokenCollection) {
         tokens = tokenCollection;
     }
 
-    Token getToken()
-    {
-        Token t = tokens.front();
+    Token getToken() {
+        curToken = tokens.front();
         tokens.pop_front();
-        return t;
+        return curToken;
     }
 
     bool getCurToken()
