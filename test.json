@@ -1,0 +1,66 @@
+{
+    "Token": {"type": "", "value": ""},
+    "Type": "PROGRAM",
+    "children": [
+       {
+          "Token": {"type": "MINUS", "value": "-"},
+          "Type": "EXPRESSION",
+          "children": [
+             {
+                "Token": {"type": "MINUS", "value": "-"},
+                "Type": "EXPRESSION",
+                "children": [
+                   {
+                      "Token": {"type": "MULTIPLY", "value": "*"},
+                      "Type": "TERM",
+                      "children": [
+                         {
+                            "Token": {"type": "PLUS", "value": "+"},
+                            "Type": "EXPRESSION",
+                            "children": [
+                               {
+                                  "Token": {"type": "NUMBER", "value": "1"},
+                                  "Type": "FACTOR",
+                                  "children": []
+                               },
+                               {
+                                  "Token": {"type": "NUMBER", "value": "2"},
+                                  "Type": "FACTOR",
+                                  "children": []
+                               }
+                            ]
+                         },
+                         {
+                            "Token": {"type": "NUMBER", "value": "3"},
+                            "Type": "FACTOR",
+                            "children": []
+                         }
+                      ]
+                   },
+                   {
+                      "Token": {"type": "NUMBER", "value": "1"},
+                      "Type": "FACTOR",
+                      "children": []
+                   }
+                ]
+             },
+             {
+                "Token": {"type": "DIVIDE", "value": "/"},
+                "Type": "TERM",
+                "children": [
+                   {
+                      "Token": {"type": "NUMBER", "value": "10"},
+                      "Type": "FACTOR",
+                      "children": []
+                   },
+                   {
+                      "Token": {"type": "NUMBER", "value": "8"},
+                      "Type": "FACTOR",
+                      "children": []
+                   }
+                ]
+             }
+          ]
+       }
+    ]
+ }

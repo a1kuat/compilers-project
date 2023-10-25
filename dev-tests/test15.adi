@@ -5,7 +5,7 @@ var inputSize := 31;
 var largestWord, str := "" , "";
 var cnt,max := 0,0;
 
-for ch in 0 .. inputSize - 1 
+for ch in 0..inputSize - 1 
 loop
     if input[ch] = ' ' then
         if cnt > mx then
