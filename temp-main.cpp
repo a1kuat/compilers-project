@@ -54,7 +54,8 @@ enum class TokenType
     LESS,
     MORE,
     EXCLAMATION,
-    FOLLOWING
+    FOLLOWING,
+    STRING
 };
 
 class Token
@@ -95,7 +96,7 @@ public:
 
     std::list<Token> analyze()
     {
-        std::string operators = "+-*/,:=(){}[];.><!";
+        std::string operators = "\"+-*/,:=(){}[];.><!";
 
         for (int i = 0; i < src.length(); i++)
         {
@@ -121,6 +122,18 @@ public:
                         token += src[i];
                         t = TokenType::COLON;
                     }
+                }
+                else if (src[i] == '"')
+                {
+                    int j = i + 1;
+                    while (j < src.size() && src[j] != '"')
+                    {
+                        std::cout << src[j];
+                        token += src[j];
+                        j++;
+                    }
+                    i = j;
+                    t = TokenType::STRING;
                 }
                 else if (src[i] == '/')
                 {
@@ -467,6 +480,9 @@ public:
             break;
         case TokenType::FOLLOWING:
             typeName = "FOLLOWING";
+            break;
+        case TokenType::STRING:
+            typeName = "STRING";
             break;
         }
 
@@ -1607,10 +1623,10 @@ int main(int argc, char **argv)
 
     std::list<Token> tokens = lexer.analyze();
 
-    // lexer.printTokens(tokens);
+    lexer.printTokens(tokens);
 
-    Parser parser(tokens);
-    parser.analyze();
+    // Parser parser(tokens);
+    // parser.analyze();
 
     return 0;
 }
