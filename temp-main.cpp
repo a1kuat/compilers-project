@@ -54,7 +54,8 @@ enum class TokenType
     LESS,
     MORE,
     EXCLAMATION,
-    FOLLOWING
+    FOLLOWING,
+    STRING
 };
 
 class Token
@@ -95,7 +96,7 @@ public:
 
     std::list<Token> analyze()
     {
-        std::string operators = "+-*/,:=(){}[];.><!";
+        std::string operators = "\"+-*/,:=(){}[];.><!";
 
         for (int i = 0; i < src.length(); i++)
         {
@@ -121,6 +122,18 @@ public:
                         token += src[i];
                         t = TokenType::COLON;
                     }
+                }
+                else if (src[i] == '"')
+                {
+                    int j = i + 1;
+                    while (j < src.size() && src[j] != '"')
+                    {
+                        std::cout << src[j];
+                        token += src[j];
+                        j++;
+                    }
+                    i = j;
+                    t = TokenType::STRING;
                 }
                 else if (src[i] == '/')
                 {
@@ -233,7 +246,7 @@ public:
                     ttype = TokenType::RANGE;
                 }
 
-                if (hasMoreThanOneDot(token))
+                else if (hasMoreThanOneDot(token))
                 {
                     ttype = TokenType::UNKNOWNTYPE;
                 }
@@ -468,6 +481,9 @@ public:
         case TokenType::FOLLOWING:
             typeName = "FOLLOWING";
             break;
+        case TokenType::STRING:
+            typeName = "STRING";
+            break;
         }
 
         return typeName;
@@ -491,9 +507,9 @@ enum class NodeType
     IDENTIFIER,
     VARIABLE,
     CONSTANT,
-    ASSIGNMENT,
-    ASSIGNMENT_LEFT,
-    ASSIGNMENT_RIGHT,
+    DECLARATION,
+    DECLARATION_LEFT,
+    DECLARATION_RIGHT,
     IF_STATEMENT,
     IF_BODY,
     IF_COND,
@@ -509,7 +525,11 @@ enum class NodeType
     LIST,
     LIST_ELEMENT,
     TUPLE,
-    TUPLE_ELEMENT
+    TUPLE_ELEMENT,
+    FORLOOP_BODY,
+    PRINT,
+    WHILELOOP_BODY,
+    ELSE_BODY
 };
 
 class AST
@@ -540,6 +560,7 @@ public:
     AST()
     {
         node.type = NodeType::PROGRAM;
+        node.value = Token();
     }
 };
 
@@ -668,7 +689,8 @@ public:
             }
         }
 
-        exprListNode.type = NodeType::ASSIGNMENT_LEFT;
+        exprListNode.type = NodeType::DECLARATION_LEFT;
+        exprListNode.value = Token();
         return exprListNode;
     }
 
@@ -697,6 +719,7 @@ public:
         }
 
         varsListNode.type = NodeType::VARS_LIST;
+        varsListNode.value = Token();
         return varsListNode;
     }
 
@@ -704,6 +727,7 @@ public:
     {
         AST::Node forNode; // before Loop
         forNode.type = NodeType::FORLOOP;
+        forNode.value = Token();
 
         Token token = getToken();
         std::vector<Token> left;
@@ -716,36 +740,124 @@ public:
 
         if (left.size() != 3 || left[0].type != TokenType::IDENTIFIER || left[1].value != IN_KEYWORD || left[2].type != TokenType::RANGE)
         {
-            throw std::runtime_error("for condition is empty!");
+            std::cout << getTokenTypeName(left[2].type);
+            throw std::runtime_error("for condition is not correct!");
         }
 
         forNode.children.push_back({NodeType::IDENTIFIER, left[0]});
         forNode.children.push_back({NodeType::RANGE, left[2]});
 
-        AST::Node bodyNode; // Body
-        bodyNode.type = NodeType::BODY;
+        AST::Node bodyNode;
+        bodyNode.type = NodeType::FORLOOP_BODY;
 
         std::list<Token> right;
 
-        while (token.type != TokenType::DELIMITER)
+        while (!(token.type == TokenType::KEYWORD && token.value == END_KEYWORD))
         {
             right.push_back(token);
             token = getToken();
         }
-        token = getToken(); // skip end keyword
 
         if (right.empty())
         {
-            throw std::runtime_error("var right part is empty!");
+            throw std::runtime_error("for body is empty!");
         }
 
-        curTokensList = right;
-        getCurToken(); // set curToken to the initial pos
+        std::list<Token> tokensBackup;
+        tokensBackup = tokens;
+
+        tokens = right;
 
         bodyNode.children = parseBody();
         forNode.children.push_back(bodyNode);
 
+        tokens = tokensBackup;
+
         return forNode;
+    }
+
+    AST::Node parseIf()
+    {
+        AST::Node ifNode(NodeType::IF_STATEMENT, Token());
+
+        Token token = getToken();
+        std::list<Token> left;
+        while (token.value != THEN_KEYWORD)
+        {
+            left.push_back(token);
+            token = getToken();
+        }
+
+        token = getToken(); // skip then keyword
+
+        if (left.empty())
+        {
+            throw std::runtime_error("if condition is empty!");
+        }
+
+        curTokensList = left;
+
+        AST::Node parseNode = parseCond();
+
+        ifNode.children.push_back(parseNode);
+
+        AST::Node bodyNode;
+        bodyNode.type = NodeType::IF_BODY;
+
+        std::list<Token> right;
+        std::list<Token> elseBody;
+
+        while (token.value != END_KEYWORD && token.value != ELSE_KEYWORD)
+        {
+            right.push_back(token);
+            token = getToken();
+        }
+
+        if (token.value == ELSE_KEYWORD)
+        {
+            token = getToken();
+            while (token.value != END_KEYWORD)
+            {
+                elseBody.push_back(token);
+                token = getToken();
+            }
+        }
+
+        std::cout << token.value;
+
+        if (right.empty())
+        {
+            throw std::runtime_error("if body is empty!");
+        }
+
+        std::list<Token> tokensBackup;
+        tokensBackup = tokens;
+
+        tokens = right;
+
+        bodyNode.children = parseBody();
+        ifNode.children.push_back(bodyNode);
+
+        tokens = tokensBackup;
+
+        if (!elseBody.empty())
+        {
+            AST::Node elseBodyNode(NodeType::ELSE_BODY, Token(TokenType::KEYWORD, ELSE_KEYWORD));
+            tokensBackup = tokens;
+
+            tokens = elseBody;
+
+            elseBodyNode.children = parseBody();
+            ifNode.children.push_back(elseBodyNode);
+
+            tokens = tokensBackup;
+        }
+
+        // for (auto t : tokens){
+        //     std::cout << t.value << " ";
+        // }
+
+        return ifNode;
     }
 
     AST::Node parseWhileLoop()
@@ -761,17 +873,22 @@ public:
             token = getToken();
         }
 
+        token = getToken(); // skip loop keyword
+
         if (left.empty())
         {
             throw std::runtime_error("while condition is empty!");
         }
 
         curTokensList = left;
-        getCurToken();
 
-        whileNode.children.push_back(parseCond());
+        AST::Node parseNode = parseCond();
 
-        token = getToken();
+        whileNode.children.push_back(parseNode);
+
+        AST::Node bodyNode;
+        bodyNode.type = NodeType::WHILELOOP_BODY;
+
         std::list<Token> right;
 
         while (token.value != END_KEYWORD)
@@ -785,10 +902,15 @@ public:
             throw std::runtime_error("while body is empty!");
         }
 
-        curTokensList = right;
-        getCurToken();
+        std::list<Token> tokensBackup;
+        tokensBackup = tokens;
 
-        whileNode.children.push_back(parseExpr());
+        tokens = right;
+
+        bodyNode.children = parseBody();
+        whileNode.children.push_back(bodyNode);
+
+        tokens = tokensBackup;
 
         return whileNode;
     }
@@ -798,40 +920,40 @@ public:
         AST::Node condNode;
         condNode.type = NodeType::IF_COND;
 
-        Token token = getToken();
+        getCurToken();
         std::list<Token> left;
-        while (token.type != TokenType::LESS || token.type != TokenType::MORE || token.type != TokenType::LESSOREQUAL || token.type != TokenType::MOREOREQUAL || token.type != TokenType::EQUALITY || token.type != TokenType::UNEQUALITY)
+        while (curToken.type != TokenType::LESS && curToken.type != TokenType::MORE && curToken.type != TokenType::LESSOREQUAL && curToken.type != TokenType::MOREOREQUAL && curToken.type != TokenType::EQUALITY && curToken.type != TokenType::UNEQUALITY)
         {
-            left.push_back(token);
-            token = getToken();
+            left.push_back(curToken);
+            getCurToken();
         }
 
-        if (token.type == TokenType::LESS)
+        if (curToken.type == TokenType::LESS)
         {
             condNode.value.value = "<";
             condNode.value.type = TokenType::LESS;
         }
-        if (token.type == TokenType::MORE)
+        if (curToken.type == TokenType::MORE)
         {
             condNode.value.value = ">";
             condNode.value.type = TokenType::MORE;
         }
-        if (token.type == TokenType::MOREOREQUAL)
+        if (curToken.type == TokenType::MOREOREQUAL)
         {
             condNode.value.value = ">=";
             condNode.value.type = TokenType::MOREOREQUAL;
         }
-        if (token.type == TokenType::LESSOREQUAL)
+        if (curToken.type == TokenType::LESSOREQUAL)
         {
             condNode.value.value = "<=";
             condNode.value.type = TokenType::LESSOREQUAL;
         }
-        if (token.type == TokenType::EQUALITY)
+        if (curToken.type == TokenType::EQUALITY)
         {
             condNode.value.value = "==";
             condNode.value.type = TokenType::EQUAL;
         }
-        if (token.type == TokenType::UNEQUALITY)
+        if (curToken.type == TokenType::UNEQUALITY)
         {
             condNode.value.value = "!=";
             condNode.value.type = TokenType::UNEQUALITY;
@@ -842,18 +964,23 @@ public:
             throw std::runtime_error("left condition part is empty!");
         }
 
+        std::list<Token> curTokensBackup = curTokensList;
+
         curTokensList = left;
         getCurToken();
 
         condNode.children.push_back(parseExpr());
 
-        token = getToken();
+        curTokensList = curTokensBackup;
+
+        getCurToken();
         std::list<Token> right;
 
-        while (token.type != TokenType::DELIMITER)
+        right.push_back(curToken);
+
+        while (getCurToken())
         {
-            right.push_back(token);
-            token = getToken();
+            right.push_back(curToken);
         }
 
         if (right.empty())
@@ -869,14 +996,10 @@ public:
         return condNode;
     }
 
-    // AST::Node getNodeRightAss() {
-
-    // }
-
     AST::Node parseAssignment()
     {
         AST::Node assignmentNode;
-        assignmentNode.type = NodeType::ASSIGNMENT;
+        assignmentNode.type = NodeType::DECLARATION;
 
         assignmentNode.value.value = ":=";
         assignmentNode.value.type = TokenType::DEFINITION;
@@ -903,7 +1026,8 @@ public:
         curTokensList = left;
 
         AST::Node assignmentLeft = parseVarsList();
-        assignmentLeft.type = NodeType::ASSIGNMENT_LEFT;
+        assignmentLeft.type = NodeType::DECLARATION_LEFT;
+        assignmentLeft.value = Token();
         assignmentNode.children.push_back(assignmentLeft);
 
         token = getToken();
@@ -912,7 +1036,8 @@ public:
         std::list<Token> empty;
 
         AST::Node assignmentRight;
-        assignmentRight.type = NodeType::ASSIGNMENT_RIGHT;
+        assignmentRight.type = NodeType::DECLARATION_RIGHT;
+        assignmentRight.value = Token();
 
         bool allClosed = false;
 
@@ -949,7 +1074,7 @@ public:
             else if (token.type == TokenType::OPENSQUAREBRACKET)
             {
 
-                curTokensList = extractList();
+                // curTokensList = extractList();
 
                 assignmentRight.children.push_back(parseList());
                 allClosed = true;
@@ -967,6 +1092,10 @@ public:
                 allClosed = false;
             }
 
+            if (tokens.empty())
+            {
+                throw std::runtime_error("Delimiter not found!");
+            }
 
             token = getToken();
         }
@@ -1006,10 +1135,9 @@ public:
 
         AST::Node tupleNode(NodeType::TUPLE);
 
-        std::list <Token> curelement;
-        std::list <Token> empty;
+        std::list<Token> curelement;
+        std::list<Token> empty;
 
-        
         while (!tokens.empty())
         {
 
@@ -1019,7 +1147,7 @@ public:
             {
                 curTokensList = curelement;
                 getCurToken();
-                
+
                 tupleNode.children.push_back(parseExpr());
                 return tupleNode;
             }
@@ -1044,17 +1172,59 @@ public:
 
     AST::Node parseList()
     {
-        AST::Node listNode;
-        listNode.type = NodeType::LIST;
-        while (!curTokensList.empty())
+
+        Token tk = getToken();
+
+        AST::Node listNode(NodeType::LIST);
+
+        std::list<Token> curelement;
+        std::list<Token> empty;
+
+        while (!tokens.empty())
         {
-            getCurToken();
-            AST::Node newNode(NodeType::LIST_ELEMENT, curToken);
-            listNode.children.push_back(newNode);
+
+            // std::cout << tk.value << " " << getTokenTypeName(tk.type) << "\n";
+
+            if (tk.type == TokenType::CLOSESQUAREBRACKET)
+            {
+                curTokensList = curelement;
+                getCurToken();
+
+                listNode.children.push_back(parseExpr());
+                return listNode;
+            }
+            else if (tk.type == TokenType::COMMA)
+            {
+                curTokensList = curelement;
+                getCurToken();
+                listNode.children.push_back(parseExpr());
+                curelement = empty;
+            }
+
+            else
+            {
+                curelement.push_back(tk);
+            }
+
+            tk = getToken();
         }
 
-        return listNode;
+        throw std::runtime_error("list was not closed!");
     }
+
+    // AST::Node parseList()
+    // {
+    //     AST::Node listNode;
+    //     listNode.type = NodeType::LIST;
+    //     while (!curTokensList.empty())
+    //     {
+    //         getCurToken();
+    //         AST::Node newNode(NodeType::LIST_ELEMENT, curToken);
+    //         listNode.children.push_back(newNode);
+    //     }
+
+    //     return listNode;
+    // }
 
     std::list<Token> extractList()
     {
@@ -1117,7 +1287,6 @@ public:
 
         Token tk = getToken();
 
-
         // Comment - skip it in parseBody
         if (tk.type == TokenType::COMMENT)
         {
@@ -1146,9 +1315,21 @@ public:
         // Expression
         if (tk.type == TokenType::NUMBER || tk.type == TokenType::IDENTIFIER || tk.type == TokenType::OPENBRACKET)
         {
+
+            if (tokens.front().type == TokenType::DEFINITION)
+            {
+                tokens.push_front(tk);
+                return parseAssignment();
+            }
+
             while (tk.type != TokenType::DELIMITER)
             {
                 curTokensList.push_back(tk);
+
+                if (tokens.empty())
+                {
+                    throw std::runtime_error("Delimiter not found!");
+                }
                 tk = getToken();
             }
 
@@ -1167,6 +1348,45 @@ public:
         {
             curTokensList = extractFunction();
             return parseFunction();
+        }
+
+        // for loop
+        else if (tk.type == TokenType::KEYWORD && tk.value == FOR_KEYWORD)
+        {
+            return parseForLoop();
+        }
+
+        // while loop
+        else if (tk.value == WHILE_KEYWORD)
+        {
+            return parseWhileLoop();
+        }
+
+        // if statement
+        else if (tk.value == IF_KEYWORD)
+        {
+            return parseIf();
+        }
+
+        // print function
+        else if (tk.type == TokenType::KEYWORD && tk.value == PRINT_KEYWORD)
+        {
+            AST::Node printNode(NodeType::PRINT, tk);
+            while (tk.type != TokenType::DELIMITER)
+            {
+                curTokensList.push_back(tk);
+                if (tokens.empty())
+                {
+                    throw std::runtime_error("Delimiter not found!");
+                }
+                tk = getToken();
+            }
+
+            getCurToken();
+
+            printNode.children.push_back(parseVarsList());
+
+            return printNode;
         }
 
         // nothing matched
@@ -1258,8 +1478,8 @@ public:
             typeName = "PROGRAM";
             break;
 
-        case NodeType::ASSIGNMENT:
-            typeName = "ASSIGNMENT";
+        case NodeType::DECLARATION:
+            typeName = "DECLARATION";
             break;
 
         case NodeType::FACTOR:
@@ -1278,12 +1498,12 @@ public:
             typeName = "VARIABLE";
             break;
 
-        case NodeType::ASSIGNMENT_LEFT:
-            typeName = "ASSIGNMENT_LEFT";
+        case NodeType::DECLARATION_LEFT:
+            typeName = "DECLARATION_LEFT";
             break;
 
-        case NodeType::ASSIGNMENT_RIGHT:
-            typeName = "ASSIGNMENT_RIGHT";
+        case NodeType::DECLARATION_RIGHT:
+            typeName = "DECLARATION_RIGHT";
             break;
 
         case NodeType::IF_BODY:
@@ -1345,6 +1565,22 @@ public:
         case NodeType::TUPLE_ELEMENT:
             typeName = "TUPLE_ELEMENT";
             break;
+
+        case NodeType::FORLOOP_BODY:
+            typeName = "FORLOOP_BODY";
+            break;
+
+        case NodeType::PRINT:
+            typeName = "PRINT";
+            break;
+
+        case NodeType::WHILELOOP_BODY:
+            typeName = "WHILELOOP_BODY";
+            break;
+
+        case NodeType::ELSE_BODY:
+            typeName = "ELSE_BODY";
+            break;
         }
         return typeName;
     }
@@ -1387,10 +1623,10 @@ int main(int argc, char **argv)
 
     std::list<Token> tokens = lexer.analyze();
 
-    // lexer.printTokens(tokens);
+    lexer.printTokens(tokens);
 
-    Parser parser(tokens);
-    parser.analyze();
+    // Parser parser(tokens);
+    // parser.analyze();
 
     return 0;
 }
