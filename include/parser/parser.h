@@ -42,7 +42,7 @@ public:
     {
     public:
         NodeType type;
-        std::vector<Node> children;
+        std::list<Node> children;
         Token value;
 
         Node();
@@ -85,9 +85,9 @@ public:
     std::list<Token> extractList();
     std::list<Token> extractFunction();
     AST::Node getNode();
-    std::vector<AST::Node> parseBody();
-    void analyze();
-    AST::Node makeTree(NodeType nodetype, Token value, std::vector<AST::Node> children);
+    std::list<AST::Node> parseBody();
+    AST::Node analyze();
+    AST::Node makeTree(NodeType nodetype, Token value, std::list<AST::Node> children);
     AST::Node parseExpr();
     AST::Node parseTerm();
     AST::Node parseFactor();

@@ -1,5 +1,6 @@
 #include "include/lexer/lexer.h"
 #include "include/parser/parser.h"
+#include "include/semantic/semantic.h"
 
 int main(int argc, char **argv)
 {
@@ -17,7 +18,10 @@ int main(int argc, char **argv)
     lexer.printTokens(tokens);
 
     Parser parser(tokens);
-    parser.analyze();
+    AST::Node rootNode = parser.analyze();
 
+    // Semantic semantic(rootNode);
+    // AST::Node updNode = semantic.analyze();
+    
     return 0;
 }

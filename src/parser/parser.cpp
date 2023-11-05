@@ -844,9 +844,9 @@ AST::Node Parser::getNode()
     return AST::Node();
 }
 
-std::vector<AST::Node> Parser::parseBody()
+std::list<AST::Node> Parser::parseBody()
 {
-    std::vector<AST::Node> children;
+    std::list<AST::Node> children;
     while (!tokens.empty())
     {
         AST::Node newNode = getNode();
@@ -856,13 +856,15 @@ std::vector<AST::Node> Parser::parseBody()
     return children;
 }
 
-void Parser::analyze()
+AST::Node Parser::analyze()
 {
     tree.node.children = parseBody();
 
     printAST(tree.node);
+
+    return tree.node;
 }
-AST::Node Parser::makeTree(NodeType nodetype, Token value, std::vector<AST::Node> children)
+AST::Node Parser::makeTree(NodeType nodetype, Token value, std::list<AST::Node> children)
 {
     AST::Node newnode;
     newnode.type = nodetype;
